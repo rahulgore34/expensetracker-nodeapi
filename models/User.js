@@ -18,6 +18,9 @@ const userSchema = new mongoose.Schema(
         },
         otpExpiry: {
             type: Date
+        },
+        otpSentAt: {
+            type: Date //for cooldown mechanism
         }
     },
     {
