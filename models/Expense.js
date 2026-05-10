@@ -24,6 +24,9 @@ const expenseSchema = new mongoose.Schema({
         enum: ['UPI', 'Cash', 'Card', 'Bank Transfer'],
         required: true
     },
+    category: {
+        type: String
+    },
 
     date: {
         type: Date,

@@ -126,7 +126,8 @@ exports.saveExpense = async (req, res) => {
             expenseName,
             amount,
             paidFrom,
-            date
+            date,
+            category: req.category
         });
         res.status(201).json({
             message: "Expense saved successfully",
