@@ -21,7 +21,7 @@ const expenseSchema = new mongoose.Schema({
 
     paidFrom: {
         type: String,
-        enum: ['UPI', 'Cash', 'Card', 'Bank Transfer'],
+        enum: ['UPI', 'Cash', 'Card', 'Bank Transfer','Amazon Paylater'],
         required: true
     },
     category: {
