@@ -143,3 +143,28 @@ exports.saveExpense = async (req, res) => {
 
 };
 
+exports.getMyExpenses = async (req, res) => {
+    try {
+        // userId from JWT middleware
+        const userId = req.user.userId;
+
+        const expenses = await Expense.find({
+            userId
+        }).sort({ date: -1 });
+
+        res.status(200).json({
+            statusCode: 200,
+            count: expenses.length,
+            data: expenses
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            error: error.message
+        });
+
+    }
+
+};
+

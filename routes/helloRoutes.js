@@ -1,5 +1,5 @@
 const express = require('express');
-const { getHello, postHello,sendOtpEmail,verifyOtp,saveExpense } = require('../controllers/helloController');
+const { getHello, postHello,sendOtpEmail,verifyOtp,saveExpense,getMyExpenses } = require('../controllers/helloController');
 const { callAzureFunction } = require('../controllers/azureController');
 const authMiddleware =
 require("../middleware/authMiddleware");
@@ -13,6 +13,7 @@ router.post('/save', postHello);
 router.post('/send-otp', sendOtpEmail);
 router.post('/verify-otp', verifyOtp);
 router.post('/save-expense',authMiddleware,categoryMiddleware, saveExpense);
+router.get('/my-expenses', authMiddleware, getMyExpenses);
 router.get('/callazurefn', callAzureFunction);
 module.exports = router;
 
