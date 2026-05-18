@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const User = require('../models/User');
 const sendOtpEmail = require('../utils/sendOtpEmail');
 const generateToken = require("../utils/generateToken");
@@ -156,6 +157,152 @@ exports.getMyExpenses = async (req, res) => {
             statusCode: 200,
             count: expenses.length,
             data: expenses
+        });
+
+    } catch (error) {
+
+        res.status(500).json({
+            error: error.message
+        });
+
+    }
+
+};
+
+exports.getExpenseSummary = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const expenses = await Expense.find({
+            userId
+        });
+
+        // total expense
+        const totalExpense = expenses.reduce(
+            (sum, item) => sum + item.amount,
+            0
+        );
+
+        // total transactions
+        const totalTransactions =
+            expenses.length;
+        // category count
+        const categoryMap = {};
+        // payment method count
+        const paymentMap = {};
+        expenses.forEach(item => {
+            // category counting
+            categoryMap[item.category] =
+                (categoryMap[item.category] || 0) + 1;
+            // payment counting
+            paymentMap[item.paidFrom] =
+                (paymentMap[item.paidFrom] || 0) + 1;
+        });
+
+        // top category-mylogic to find the category with the highest count
+     let topCategory = null;
+        let topCategoryFrequency = 0;
+        for (const category in categoryMap) {
+            if (categoryMap[category] > topCategoryFrequency) {
+                topCategoryFrequency = categoryMap[category];
+                topCategory = category;
+            }
+        }
+
+        // most used payment method
+        const mostUsedPaymentMethod =
+            Object.keys(paymentMap).reduce(
+                (a, b) =>
+                    paymentMap[a] > paymentMap[b]
+                        ? a
+                        : b,
+                Object.keys(paymentMap)[0]
+            );
+
+        res.status(200).json({
+            totalExpense,
+            totalTransactions,
+            topCategory,
+            mostUsedPaymentMethod,
+            topCategoryFrequency
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            error: error.message
+        });
+    }
+};
+
+exports.getMonthlyExpenseSummary =
+async (req, res) => {
+
+    try {
+
+        const userId = req.user.userId;
+
+        const summary =
+        await Expense.aggregate([
+
+            {
+                $match: {
+                    userId:
+                    new mongoose.Types.ObjectId(userId)
+                }
+            },
+
+            {
+                $group: {
+
+                    _id: {
+                        month: {
+                            $month: "$date"
+                        }
+                    },
+
+                    total: {
+                        $sum: "$amount"
+                    }
+
+                }
+            },
+
+            {
+                $sort: {
+                    "_id.month": 1
+                }
+            }
+
+        ]);
+
+        // convert month number → month name
+        const monthNames = [
+            "Jan",
+            "Feb",
+            "Mar",
+            "Apr",
+            "May",
+            "Jun",
+            "Jul",
+            "Aug",
+            "Sep",
+            "Oct",
+            "Nov",
+            "Dec"
+        ];
+
+        const formattedData =
+        summary.map(item => ({
+
+            month:
+            monthNames[item._id.month - 1],
+
+            total:
+            item.total
+
+        }));
+
+        res.status(200).json({
+            data: formattedData
         });
 
     } catch (error) {
